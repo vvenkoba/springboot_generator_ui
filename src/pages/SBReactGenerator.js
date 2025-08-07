@@ -15,6 +15,7 @@ import LinearProgress, { LinearProgressProps } from '@mui/material/LinearProgres
 function SBReactGenerator() {
   const [options, setOptions] = useState({});
   const [loading, setLoading] = useState(false);
+  const [loadingMessage,setLoadingMessage] = useState('Loading...')
   const [generating, setGenerating] = useState(false);
   const [downloadUrl, setDownloadUrl] = useState(null);
   const [error, setError] = useState(null);
@@ -644,6 +645,7 @@ function SBReactGenerator() {
 
   const fetchOptions = async () => {
     try {
+      setLoadingMessage('Fetching available options...')
       setLoading(true);
       const response = await axios.get('http://localhost:8080/api/generator/options');
       setOptions(response.data);
@@ -657,6 +659,8 @@ function SBReactGenerator() {
 
   const onSubmit = async (data) => {
     try {
+      setLoadingMessage('Generating project...')
+      setLoading(true);
       setGenerating(true);
       setError(null);
       setSuccess(false);
@@ -669,30 +673,36 @@ function SBReactGenerator() {
       setDownloadUrl(url);
       setSuccess(true);
     } catch (error) {
+      setLoading(false)
       console.error('Error generating project:', error);
       setError('Failed to generate project. Please check your configuration.');
     } finally {
+      setLoading(false);
       setGenerating(false);
     }
   };
 
   const onSubmitWithAi = async (data) => {
     try {
+      setLoadingMessage('Generating project...')
+      setLoading(true);
       setGenerating(true);
       setError(null);
       setSuccess(false);
       setDownloadUrl(null);
-      const response = await axios.post('http://localhost:5000/generate', data, {
+      const response = await axios.post('https://springbootgenerator-backend-acdxcgb2ftdze3ar.southindia-01.azurewebsites.net/generate', data, {
         responseType: 'blob'
       });
       const url = window.URL.createObjectURL(new Blob([response.data]));
       setDownloadUrl(url);
       setSuccess(true);
     } catch (error) {
+      setLoading(false);
       console.error('Error generating project:', error);
       setError('Failed to generate project. Please check your configuration.');
     } finally {
       setGenerating(false);
+      setLoading(false)
     }
   }
 
@@ -762,7 +772,7 @@ function SBReactGenerator() {
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
           <Loader2 className="animate-spin h-8 w-8 text-primary-600 mx-auto mb-4" />
-          <p className="text-gray-600">Loading available options...</p>
+          <p className="text-gray-600">{loadingMessage}</p>
         </div>
       </div>
     );
